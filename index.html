@@ -1,11 +1,16 @@
 <!DOCTYPE html>
-<html lang="si" class="scroll-smooth">
+<html lang="si" class="scroll-smooth" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>O/L Mathematics | Ovinda Shehan Academy</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Google Fonts -->
@@ -18,234 +23,667 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <style>
-        body { font-family: 'Poppins', 'Noto Sans Sinhala', sans-serif; }
+        body { font-family: 'Poppins', 'Noto Sans Sinhala', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .picker-scroll::-webkit-scrollbar { display: none; }
+        .picker-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
+        
+        button:focus-visible, a:focus-visible, input:focus-visible {
+            outline: 3px solid #f59e0b !important;
+            outline-offset: 2px;
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 flex flex-col min-h-screen antialiased">
+<body class="bg-slate-900 text-slate-100 dark:bg-slate-900 dark:text-slate-100 flex flex-col min-h-screen antialiased transition-colors duration-300">
 
-    <!-- Navigation Bar -->
-    <nav class="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
+    <!-- Responsive Navigation Bar -->
+    <nav id="mainNav" class="sticky top-0 z-50 bg-slate-950/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-800 shadow-lg hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
+            <div class="flex items-center justify-between h-20">
                 
-                <!-- Logo (3 Times Click for Hidden Secret Admin Portal) -->
+                <!-- Logo & Brand Name (Click 3 times for Admin) -->
                 <div class="flex items-center space-x-3 cursor-pointer select-none" onclick="handleLogoClick()">
-                    <div class="w-10 h-10 bg-cyan-500/20 border border-cyan-500/40 rounded-xl flex items-center justify-center text-cyan-400 font-bold text-xl hover:scale-105 transition">
-                        OS
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-slate-950 font-extrabold text-lg shadow-md shadow-cyan-500/25">
+                        <i class="fa-solid fa-graduation-cap"></i>
                     </div>
                     <div>
-                        <span class="text-lg font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent block leading-tight">
-                            OVINDA SHEHAN
-                        </span>
-                        <span class="text-[10px] text-slate-400 tracking-wider font-medium">O/L MATHEMATICS ACADEMY</span>
+                        <span class="text-sm sm:text-lg font-bold tracking-tight text-white block">OVINDA SHEHAN</span>
+                        <span class="text-[9px] sm:text-[10px] text-cyan-400 font-semibold tracking-wider uppercase block">O/L Mathematics Academy</span>
                     </div>
                 </div>
 
-                <!-- Desktop Menu -->
-                <div class="hidden md:flex items-center space-x-1 text-xs font-semibold">
-                    <button onclick="showSection('home')" class="nav-btn px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 transition">මුල් පිටුව (Home)</button>
-                    <button onclick="showSection('login')" class="nav-btn px-3 py-2 rounded-lg text-cyan-400 hover:bg-slate-800 transition">Student Login</button>
-                    <button onclick="showSection('classes')" class="nav-btn px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 transition">පන්ති විස්තර</button>
-                    <button onclick="showSection('resources')" class="nav-btn px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 transition">Past Papers</button>
-                    <button onclick="showSection('payments')" class="nav-btn px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 transition">Payment Info</button>
+                <!-- Desktop Navigation Menu -->
+                <div class="hidden lg:flex items-center space-x-1 text-xs font-semibold">
+                    <button onclick="showSection('dashboard')" class="nav-btn px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">DASHBOARD</button>
+                    <button onclick="showSection('classes')" class="nav-btn px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">CLASSES</button>
+                    <button onclick="showSection('recordings')" class="nav-btn px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition flex items-center gap-1.5"><i class="fa-solid fa-video text-rose-400"></i> RECORDINGS</button>
+                    <button onclick="showSection('resources')" class="nav-btn px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">PAST PAPERS</button>
+                    <button onclick="showSection('quiz')" class="nav-btn px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition flex items-center gap-1.5"><i class="fa-solid fa-brain text-cyan-400"></i> QUIZZES</button>
+                    <button onclick="showSection('homework')" class="nav-btn px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition flex items-center gap-1.5"><i class="fa-solid fa-upload text-emerald-400"></i> HOMEWORK</button>
+                    <button onclick="showSection('leaderboard')" class="nav-btn px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition flex items-center gap-1.5"><i class="fa-solid fa-trophy text-amber-400"></i> LEADERBOARD</button>
+                    <button onclick="showSection('payments')" class="nav-btn px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">PAYMENTS</button>
+                    
+                    <button onclick="showSection('admin-login')" class="nav-btn px-3 py-2.5 rounded-xl text-amber-400 hover:bg-amber-500/10 transition flex items-center gap-1.5 border border-amber-500/30"><i class="fa-solid fa-user-shield"></i> ADMIN</button>
+                    <button onclick="toggleDarkMode()" class="px-3 py-2.5 rounded-xl text-amber-400 hover:bg-slate-800/80 transition" title="Toggle Theme"><i id="themeIcon" class="fa-solid fa-moon"></i></button>
+                    <button onclick="logoutStudent()" class="nav-btn px-3 py-2.5 rounded-xl text-rose-400 hover:bg-slate-800 transition flex items-center gap-1.5"><i class="fa-solid fa-right-from-bracket"></i> LOGOUT</button>
                 </div>
 
-                <div class="hidden sm:flex items-center space-x-3">
-                    <a href="https://wa.me/94770000000" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20">
-                        <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
-                    </a>
+                <!-- Mobile & TV Menu Button -->
+                <div class="flex items-center gap-2 lg:hidden">
+                    <button onclick="toggleDarkMode()" class="text-amber-400 p-2.5 text-xl bg-slate-900 rounded-xl border border-slate-800 transition"><i id="themeIconMob" class="fa-solid fa-moon"></i></button>
+                    <button onclick="toggleMobileMenu()" class="text-slate-300 hover:text-cyan-400 p-2.5 text-2xl focus:outline-none bg-slate-900 rounded-xl border border-slate-800 transition">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
                 </div>
             </div>
+        </div>
+
+        <!-- Mobile Dropdown Menu -->
+        <div id="mobileMenu" class="hidden lg:hidden bg-slate-950/98 border-b border-slate-800 px-6 py-4 space-y-2 text-sm font-semibold shadow-2xl">
+            <button onclick="showSection('dashboard'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">DASHBOARD</button>
+            <button onclick="showSection('classes'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">CLASSES</button>
+            <button onclick="showSection('recordings'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition"><i class="fa-solid fa-video text-rose-400 mr-2"></i> RECORDINGS</button>
+            <button onclick="showSection('resources'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">PAST PAPERS</button>
+            <button onclick="showSection('quiz'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition"><i class="fa-solid fa-brain text-cyan-400 mr-2"></i> QUIZZES</button>
+            <button onclick="showSection('homework'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition"><i class="fa-solid fa-upload text-emerald-400 mr-2"></i> HOMEWORK</button>
+            <button onclick="showSection('leaderboard'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition"><i class="fa-solid fa-trophy text-amber-400 mr-2"></i> LEADERBOARD</button>
+            <button onclick="showSection('payments'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">PAYMENTS</button>
+            <button onclick="showSection('admin-login'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl text-amber-400 hover:bg-amber-500/10 transition border border-amber-500/30"><i class="fa-solid fa-user-shield mr-2"></i> ADMIN PANEL</button>
+            <button onclick="logoutStudent(); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl text-rose-400 hover:bg-slate-800 transition"><i class="fa-solid fa-right-from-bracket mr-2"></i> LOGOUT</button>
         </div>
     </nav>
 
-    <!-- SECTION 1: HOME PAGE -->
-    <main id="sec-home" class="sec-content space-y-20 py-10">
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-8">
-            <div class="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 px-4 py-1.5 rounded-full text-xs font-semibold mb-6">
-                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                O/L Mathematics Target & Revision Masterclass
-            </div>
-            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight mb-6">
-                O/L ගණිතයට <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">'A' සාමාර්ථයක්</span> ගන්න <br class="hidden sm:inline">හරියටම වැඩ කරමු!
-            </h1>
-            <p class="text-slate-300 text-sm sm:text-base max-w-3xl mx-auto mb-8 leading-relaxed">
-                Ovinda Shehan සර් විසින් මෙහෙයවන විශේෂිත O/L ගණිත පන්ති මාලාව. Cloud Database එකක් මඟින් Paper Marks සහ Study Tracker එක පාලනය වන සිංහලයේ අංක 01 පන්ති පද්ධතිය.
-            </p>
-            <div class="flex justify-center">
-                <button onclick="showSection('login')" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 text-slate-950 font-bold px-10 py-3.5 rounded-xl transition shadow-lg shadow-cyan-500/20 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-right-to-bracket"></i> Student Login
-                </button>
-            </div>
-        </section>
-    </main>
+    <!-- NOTIFICATION TOAST -->
+    <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-32 opacity-0 transition-all duration-300 bg-slate-800 border border-cyan-500/40 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+        <div id="toastIcon" class="text-cyan-400 text-lg"><i class="fa-solid fa-circle-check"></i></div>
+        <div>
+            <h4 id="toastTitle" class="text-xs font-bold text-white">සාර්ථකයි!</h4>
+            <p id="toastMsg" class="text-[11px] text-slate-400">විස්තර යාවත්කාලීන විය.</p>
+        </div>
+    </div>
 
-    <!-- SECTION: STUDENT LOGIN -->
-    <main id="sec-login" class="sec-content hidden max-w-md mx-auto my-16 px-4">
-        <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 space-y-6">
-            <h2 class="text-2xl font-bold text-center text-white"><i class="fa-solid fa-user-graduate text-cyan-400 mr-2"></i>Student Login</h2>
+    <!-- STUDENT LOGIN -->
+    <main id="sec-login" class="sec-content max-w-md w-full mx-auto my-auto px-4 py-12">
+        <div class="bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-700 space-y-6 shadow-2xl animate-fade">
+            <div class="text-center">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-slate-950 font-extrabold text-xl shadow-md mx-auto mb-3">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-bold text-white">STUDENT LOGIN</h2>
+                <p class="text-xs text-slate-400 mt-1">Ovinda Shehan's O/L Mathematics Academy</p>
+            </div>
             <div>
-                <label class="block text-xs text-slate-400 mb-1">Student Reg No (ID)</label>
-                <input type="text" id="loginRegNo" placeholder="e.g. M-101" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-cyan-500">
+                <label class="block text-xs text-slate-400 mb-1">Username</label>
+                <input type="text" id="loginUsername" placeholder="e.g. ovinda" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
             </div>
             <div>
                 <label class="block text-xs text-slate-400 mb-1">Password</label>
-                <input type="password" id="loginPassword" placeholder="******" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-cyan-500">
+                <input type="password" id="loginPassword" placeholder="******" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
             </div>
-            <button onclick="studentLogin()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold py-3 rounded-xl transition">Log In</button>
+            <button onclick="studentLogin()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-lg shadow-cyan-500/20 text-sm">LOG IN</button>
+            <div class="flex flex-col sm:flex-row justify-between items-center pt-2 text-xs gap-3">
+                <div>
+                    <span class="text-slate-400">ගිණුමක් නැද්ද?</span>
+                    <button onclick="showSection('register')" class="text-cyan-400 font-bold hover:underline ml-1">ලියාපදිංචි වන්න</button>
+                </div>
+                <button onclick="showSection('admin-login')" class="text-amber-400 font-semibold hover:underline flex items-center gap-1"><i class="fa-solid fa-user-shield"></i> Admin Login</button>
+            </div>
         </div>
     </main>
 
-    <!-- SECRET SECTION: HIDDEN ADMIN LOGIN (Triggered via 3 clicks on Logo) -->
-    <main id="sec-admin-login" class="sec-content hidden max-w-md mx-auto my-16 px-4">
-        <div class="bg-slate-800 p-8 rounded-2xl border border-amber-500/50 space-y-6 shadow-2xl shadow-amber-500/10">
+    <!-- STUDENT SELF REGISTRATION (SIGN UP) -->
+    <main id="sec-register" class="sec-content hidden max-w-md w-full mx-auto my-auto px-4 py-8">
+        <div class="bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-700 space-y-4 sm:space-y-5 shadow-2xl animate-fade">
+            <div class="text-center">
+                <h2 class="text-xl sm:text-2xl font-bold text-white">STUDENT SIGN UP</h2>
+                <p class="text-xs text-slate-400 mt-1">අලුත් ගිණුමක් සාදාගන්න</p>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Full Name (සම්පූර්ණ නම)</label>
+                <input type="text" id="regName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" placeholder="ඔවින්ද ෂෙහාන්">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Username (Login වීමට නමක්)</label>
+                <input type="text" id="regUsername" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" placeholder="ovinda_s">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Password (මුරපදයක්)</label>
+                <input type="password" id="regPass" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" placeholder="******">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Phone Number (දුරකථන අංකය)</label>
+                <input type="text" id="regPhone" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" placeholder="0771234567">
+            </div>
+            <button onclick="studentRegister()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3.5 rounded-xl transition text-sm">Register Now</button>
+            <button onclick="showSection('login')" class="w-full text-xs text-slate-400 hover:text-white pt-1">Already have an account? Login</button>
+        </div>
+    </main>
+
+    <!-- SECRET ADMIN LOGIN -->
+    <main id="sec-admin-login" class="sec-content hidden max-w-md w-full mx-auto my-auto px-4 py-12">
+        <div class="bg-slate-800 p-6 sm:p-8 rounded-2xl border border-amber-500/50 space-y-6 shadow-2xl shadow-amber-500/10 animate-fade">
             <div class="text-center">
                 <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20 font-bold tracking-wider uppercase">Secret Portal</span>
-                <h2 class="text-2xl font-bold text-amber-400 mt-2"><i class="fa-solid fa-user-shield mr-2"></i>Admin Access</h2>
+                <h2 class="text-xl sm:text-2xl font-bold text-amber-400 mt-2"><i class="fa-solid fa-user-shield mr-2"></i>ADMIN ACCESS</h2>
             </div>
             <div>
-                <label class="block text-xs text-slate-400 mb-1">Admin Security Key</label>
-                <input type="password" id="adminKey" placeholder="Enter Security Code" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500">
+                <label class="block text-xs text-slate-400 mb-1">Admin Username</label>
+                <input type="text" id="adminUser" placeholder="Username" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500 text-white">
             </div>
-            <button onclick="adminLogin()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-xl transition">Enter Admin Panel</button>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Admin Password</label>
+                <input type="password" id="adminPass" placeholder="Password" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500 text-white">
+            </div>
+            <button onclick="adminLogin()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3.5 rounded-xl transition text-sm">ENTER ADMIN PANEL</button>
+            <button onclick="showSection('login')" class="w-full text-xs text-slate-400 hover:text-white pt-2">Back to Student Login</button>
         </div>
     </main>
 
-    <!-- SECTION: ADMIN PANEL -->
-    <main id="sec-admin-panel" class="sec-content hidden max-w-7xl mx-auto px-4 py-10 space-y-8">
-        <div class="bg-slate-800 p-6 rounded-2xl border border-amber-500/30 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-amber-400">Admin Control Panel</h1>
-                <p class="text-xs text-slate-400">Add Students & Record Paper Marks</p>
+    <!-- PROFESSIONAL TABBED ADMIN PANEL -->
+    <main id="sec-admin-panel" class="sec-content hidden max-w-7xl mx-auto px-4 py-10 space-y-8 animate-fade w-full">
+        <!-- Admin Header -->
+        <div class="bg-slate-800 p-6 rounded-2xl border border-amber-500/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <div>
+                    <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Management Dashboard</span>
+                    <h1 class="text-xl sm:text-2xl font-bold text-amber-400 mt-1">ADMIN CONTROL PANEL</h1>
+                </div>
             </div>
-            <button onclick="showSection('home')" class="bg-slate-900 text-xs px-4 py-2 rounded-xl text-slate-300 hover:text-white">Logout Admin</button>
+            <button onclick="showSection('login')" class="bg-slate-900 text-xs px-4 py-2.5 rounded-xl text-slate-300 hover:text-white border border-slate-700 transition">LOGOUT ADMIN</button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Add New Student Form -->
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-4">
-                <h3 class="text-lg font-bold text-white">1. අලුත් ළමයෙකු එකතු කරන්න</h3>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Student Name</label>
-                    <input type="text" id="addName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm">
+        <!-- Admin Navigation Tabs -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 picker-scroll">
+            <button onclick="switchAdminTab('overview')" id="atab-overview" class="admin-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition whitespace-nowrap shadow-md"><i class="fa-solid fa-chart-pie mr-1.5"></i> Overview</button>
+            <button onclick="switchAdminTab('students')" id="atab-students" class="admin-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition whitespace-nowrap"><i class="fa-solid fa-users mr-1.5"></i> Student Registrations</button>
+            <button onclick="switchAdminTab('payments')" id="atab-payments" class="admin-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition whitespace-nowrap"><i class="fa-solid fa-receipt mr-1.5"></i> Payments & Slips</button>
+            <button onclick="switchAdminTab('zoom')" id="atab-zoom" class="admin-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition whitespace-nowrap"><i class="fa-solid fa-video mr-1.5"></i> Live Zoom Links</button>
+            <button onclick="switchAdminTab('recordings')" id="atab-recordings" class="admin-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition whitespace-nowrap"><i class="fa-solid fa-film mr-1.5"></i> Recordings</button>
+            <button onclick="switchAdminTab('timetable')" id="atab-timetable" class="admin-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition whitespace-nowrap"><i class="fa-solid fa-calendar-days mr-1.5"></i> Class Timetable</button>
+            <button onclick="switchAdminTab('performance')" id="atab-performance" class="admin-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition whitespace-nowrap"><i class="fa-solid fa-chart-line mr-1.5"></i> Performance & Charts</button>
+        </div>
+
+        <!-- TAB 1: OVERVIEW -->
+        <div id="apanel-overview" class="admin-panel-section space-y-6 animate-fade">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex items-center justify-between shadow-xl">
+                    <div>
+                        <span class="text-xs text-slate-400 font-semibold block">මුළු සිසුන් සංඛ්‍යාව</span>
+                        <h3 id="statTotalStudents" class="text-2xl sm:text-3xl font-extrabold text-white mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
                 </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Reg No / ID</label>
-                    <input type="text" id="addReg" placeholder="M-101" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex items-center justify-between shadow-xl">
+                    <div>
+                        <span class="text-xs text-slate-400 font-semibold block">අනුමත වූ ගෙවීම්</span>
+                        <h3 id="statApprovedPayments" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xl"><i class="fa-solid fa-circle-check"></i></div>
                 </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Assign Password</label>
-                    <input type="text" id="addPass" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex items-center justify-between shadow-xl">
+                    <div>
+                        <span class="text-xs text-slate-400 font-semibold block">පරීක්ෂා කිරීමට ඇති Slips</span>
+                        <h3 id="statPendingSlips" class="text-2xl sm:text-3xl font-extrabold text-amber-400 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center justify-center text-xl"><i class="fa-solid fa-receipt"></i></div>
                 </div>
-                <button onclick="addNewStudent()" class="w-full bg-emerald-500 text-slate-950 font-bold py-2.5 rounded-xl text-sm">Save Student to Cloud</button>
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex items-center justify-between shadow-xl">
+                    <div>
+                        <span class="text-xs text-slate-400 font-semibold block">ක්‍රියාකාරී පන්ති</span>
+                        <h3 id="statTotalClasses" class="text-2xl sm:text-3xl font-extrabold text-cyan-400 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/30 flex items-center justify-center text-xl"><i class="fa-solid fa-chalkboard-user"></i></div>
+                </div>
             </div>
 
-            <!-- Record Marks Form -->
+            <!-- Quick Overview Card -->
             <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-4">
-                <h3 class="text-lg font-bold text-white">2. Paper Marks ඇතුළත් කරන්න</h3>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Student ID (Reg No)</label>
-                    <input type="text" id="markReg" placeholder="M-101" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-bolt text-amber-400"></i> ඉක්මන් පාලක තොරතුරු (Quick Actions Summary)
+                </h3>
+                <p class="text-xs text-slate-400">ඉහත Tab මඟින් ඔබට අවශ්‍ය අංශය තෝරාගෙන පන්ති කාලසටහන්, රෙකෝඩින්ස් සහ සිසුන්ගේ ගෙවීම් පහසුවෙන් කළමනාකරණය කළ හැක.</p>
+            </div>
+        </div>
+
+        <!-- TAB 2: STUDENT REGISTRATIONS -->
+        <div id="apanel-students" class="admin-panel-section hidden space-y-6 animate-fade">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-4 shadow-xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-700 pb-3">
+                    <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-users text-amber-400"></i> ලියාපදිංචි සියලුම සිසුන්ගේ විස්තර
+                    </h3>
+                    <input type="text" id="adminStudentSearch" onkeyup="filterAdminStudents()" placeholder="නම හෝ Username එකෙන් සොයන්න..." class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-amber-500 w-full sm:w-64">
                 </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Paper Name</label>
-                    <input type="text" id="markPaper" placeholder="e.g. Target Paper 01" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300 min-w-[700px]">
+                        <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider border-b border-slate-700">
+                            <tr>
+                                <th class="p-3">Username</th>
+                                <th class="p-3">Name / School</th>
+                                <th class="p-3">Phone</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminStudentListTable" class="divide-y divide-slate-700"></tbody>
+                    </table>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
+            </div>
+        </div>
+
+        <!-- TAB 3: PAYMENTS & SLIPS -->
+        <div id="apanel-payments" class="admin-panel-section hidden space-y-6 animate-fade">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-amber-500/40 space-y-6 shadow-xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700 pb-3 gap-3">
+                    <h3 class="text-base sm:text-lg font-bold text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-receipt"></i> සිසුන් එවූ බැංකු රිසිට්පත් (Bank Slips Verification)
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300 min-w-[600px]">
+                        <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider border-b border-slate-700">
+                            <tr>
+                                <th class="p-3">Student Name</th>
+                                <th class="p-3">Username</th>
+                                <th class="p-3">Bank Slip</th>
+                                <th class="p-3">Approval Status</th>
+                                <th class="p-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminSlipsListTable" class="divide-y divide-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bank Accounts Management -->
+            <div class="bg-slate-800 p-6 rounded-2xl border border-amber-500/40 space-y-6 shadow-xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700 pb-3 gap-3">
+                    <h3 class="text-base sm:text-lg font-bold text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-building-columns"></i> ආයතනික බැංකු ගිණුම් විස්තර කළමනාකරණය
+                    </h3>
+                    <button onclick="addNewBankField()" class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-amber-500 hover:text-slate-950 transition">
+                        <i class="fa-solid fa-plus mr-1"></i> ගිණුමක් එකතු කරන්න
+                    </button>
+                </div>
+                <div id="adminBanksContainer" class="space-y-4"></div>
+                <button onclick="saveAdminBankAccounts()" class="bg-amber-500 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-amber-400 transition shadow-lg">Save Bank Accounts</button>
+            </div>
+        </div>
+
+        <!-- TAB 4: LIVE ZOOM LINKS -->
+        <div id="apanel-zoom" class="admin-panel-section hidden space-y-6 animate-fade">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-amber-500/40 space-y-4 shadow-xl">
+                <h3 class="text-base sm:text-lg font-bold text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-video"></i> දවසේ Zoom පන්ති ලින්ක් එක (Today's Class Link)
+                </h3>
+                <p class="text-xs text-slate-400">මෙම ලින්ක් එක ගෙවීම් කළ / Slip අනුමත වූ සිසුන්ට පමණක් ඔවුන්ගේ Dashboard එකේ පෙන්වනු ඇත.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs text-slate-400 mb-1">Mark (%)</label>
-                        <input type="number" id="markValue" placeholder="85" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm">
+                        <label class="block text-xs text-slate-400 mb-1">පන්ති ශීර්ෂය (Class / Session Title)</label>
+                        <input type="text" id="adminTodaysTitle" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" placeholder="උදා: ත්‍රිකෝණමිතිය පුනරීක්ෂණ පන්තිය">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-400 mb-1">Grade</label>
-                        <input type="text" id="markGrade" placeholder="A" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm">
+                        <label class="block text-xs text-slate-400 mb-1">Zoom Link URL</label>
+                        <input type="text" id="adminTodaysUrl" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" placeholder="https://zoom.us/j/xxxxxx">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Teacher Note</label>
-                    <input type="text" id="markNote" placeholder="විශිෂ්ටයි!" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm">
+                <button onclick="saveAdminTodaysClass()" class="bg-amber-500 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-amber-400 transition shadow-lg">Save Today's Class Link</button>
+            </div>
+        </div>
+
+        <!-- TAB 5: RECORDINGS -->
+        <div id="apanel-recordings" class="admin-panel-section hidden space-y-6 animate-fade">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-amber-500/40 space-y-6 shadow-xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700 pb-3 gap-3">
+                    <h3 class="text-base sm:text-lg font-bold text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-film"></i> පන්ති පටිගත කිරීම් (Class Recordings) කළමනාකරණය
+                    </h3>
+                    <button onclick="addNewRecordingField()" class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-amber-500 hover:text-slate-950 transition">
+                        <i class="fa-solid fa-plus mr-1"></i> Recording එකක් එකතු කරන්න
+                    </button>
                 </div>
-                <button onclick="addMarksToStudent()" class="w-full bg-cyan-500 text-slate-950 font-bold py-2.5 rounded-xl text-sm">Update Marks</button>
+                <div id="adminRecordingsContainer" class="space-y-4"></div>
+                <button onclick="saveAdminRecordings()" class="bg-amber-500 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-amber-400 transition shadow-lg">Save Recordings</button>
+            </div>
+        </div>
+
+        <!-- TAB 6: CLASS TIMETABLE -->
+        <div id="apanel-timetable" class="admin-panel-section hidden space-y-6 animate-fade">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-amber-500/40 space-y-6 shadow-xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700 pb-3 gap-3">
+                    <h3 class="text-base sm:text-lg font-bold text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-chalkboard-user"></i> පන්ති කාලසටහන කළමනාකරණය (Class Timetable)
+                    </h3>
+                    <button onclick="addNewClassField()" class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-amber-500 hover:text-slate-950 transition">
+                        <i class="fa-solid fa-plus mr-1"></i> පන්තියක් එකතු කරන්න
+                    </button>
+                </div>
+                <div id="adminClassesContainer" class="space-y-4"></div>
+                <button onclick="saveAdminClasses()" class="bg-amber-500 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-amber-400 transition shadow-lg">Save Timetable</button>
+            </div>
+        </div>
+
+        <!-- TAB 7: PERFORMANCE & CHARTS -->
+        <div id="apanel-performance" class="admin-panel-section hidden space-y-6 animate-fade">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-amber-500/40 space-y-6 shadow-xl">
+                <h3 class="text-base sm:text-lg font-bold text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line"></i> සිසුන්ගේ අධ්‍යයන ප්‍රගති ප්‍රස්ථාර සහ විස්තර (Performance Analytics)
+                </h3>
+                <p class="text-xs text-slate-400">මෙහිදී සිසුන් විසින් කරන ලද quizzes සහ paper marks පිළිබඳ සාමාන්‍ය අගයන් නිරීක්ෂණය කළ හැක.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="text-xs font-bold text-white mb-3">Overall Paper Marks Distribution</h4>
+                        <div class="relative h-60 w-full"><canvas id="adminMarksChart"></canvas></div>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="text-xs font-bold text-white mb-3">Student Study Hours Overview</h4>
+                        <div class="relative h-60 w-full"><canvas id="adminHoursChart"></canvas></div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- SECTION 2: STUDENT DASHBOARD -->
-    <main id="sec-dashboard" class="sec-content hidden max-w-7xl mx-auto px-4 py-10 space-y-8">
-        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex justify-between items-center">
-            <div>
-                <span class="text-xs font-bold text-cyan-400">STUDENT PORTAL</span>
-                <h1 id="welcomeUser" class="text-2xl font-bold text-white mt-1">ආයුබෝවන්!</h1>
+    <!-- STUDENT DASHBOARD -->
+    <main id="sec-dashboard" class="sec-content hidden max-w-7xl mx-auto px-4 py-10 space-y-8 animate-fade w-full">
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div id="userAvatarDisp" class="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-500 text-cyan-400 flex items-center justify-center text-2xl font-bold flex-shrink-0">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-cyan-400">STUDENT PORTAL</span>
+                    <h1 id="welcomeUser" class="text-xl sm:text-2xl font-bold text-white mt-1">ආයුබෝවන්!</h1>
+                </div>
             </div>
-            <button onclick="showSection('home')" class="bg-slate-900 text-xs px-4 py-2 rounded-xl text-slate-300">Logout</button>
+            
+            <div class="flex items-center justify-between sm:justify-start gap-3 bg-slate-900 border border-slate-700 px-4 py-2.5 rounded-xl text-xs w-full md:w-auto">
+                <div>
+                    <span id="dispStudentName" class="font-bold text-white block">Student Name</span>
+                    <span id="dispStudentPhones" class="text-slate-400 text-[11px]">Phone: --</span>
+                </div>
+                <button onclick="toggleProfileModal()" class="ml-2 bg-cyan-500/25 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 border border-cyan-500/30 px-3 py-1.5 rounded-lg transition font-semibold flex-shrink-0">
+                    Edit Profile
+                </button>
+            </div>
+        </div>
+
+        <!-- TODAY'S LIVE CLASS ZOOM LINK BOX -->
+        <div id="todaysClassBox" class="bg-gradient-to-r from-slate-800 to-slate-850 p-6 rounded-2xl border border-cyan-500/50 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl border border-cyan-500/40 flex-shrink-0">
+                    <i class="fa-solid fa-video animate-pulse"></i>
+                </div>
+                <div>
+                    <span class="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">අද දින සජීවී පන්තිය</span>
+                    <h3 id="displayClassTitle" class="text-sm sm:text-base font-bold text-white mt-1">පන්තිය සඳහා සූදානම් වන්න...</h3>
+                </div>
+            </div>
+            <div id="classActionContainer" class="w-full md:w-auto text-right"></div>
+        </div>
+
+        <!-- ATTENDANCE & SLIP UPLOAD ROW -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl border border-emerald-500/30 flex-shrink-0">
+                        <i class="fa-solid fa-clipboard-user"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white">පන්ති පැමිණීම</h3>
+                        <p class="text-[11px] text-slate-400">අද දින පන්තියට සහභාගී වූ බව සටහන් කරන්න</p>
+                    </div>
+                </div>
+                <button onclick="markAttendance()" id="attendanceBtn" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-lg flex-shrink-0">Mark Today</button>
+            </div>
+
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl border border-cyan-500/30 flex-shrink-0">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white">පන්ති ගාස්තු රිසිට්පත (Bank Slip)</h3>
+                        <p id="slipStatusText" class="text-[11px] text-amber-400">රිසිට්පතක් එවී නැත</p>
+                    </div>
+                </div>
+                <button onclick="toggleSlipModal()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition flex-shrink-0">Upload Slip</button>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-4">
-                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-plus-circle text-cyan-400 mr-2"></i>වැඩ කළ පැය ගණන</h3>
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-5">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-clock text-cyan-400"></i> වැඩ කළ කාලය සටහන් කරන්න
+                </h3>
+                
                 <div>
-                    <label class="block text-xs text-slate-300 mb-1">දිනය</label>
-                    <input type="date" id="logDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm">
+                    <label class="block text-xs text-slate-400 mb-1">දිනය</label>
+                    <input type="date" id="logDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
                 </div>
+
                 <div>
-                    <label class="block text-xs text-slate-300 mb-1">පැය ගණන</label>
-                    <input type="number" id="logHours" step="0.5" placeholder="4.5" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm">
+                    <label class="block text-xs text-slate-400 mb-2">වැඩ කළ වේලාව (Hours : Mins)</label>
+                    <div class="relative bg-slate-950 border border-slate-700 rounded-2xl p-4 flex justify-center items-center gap-6 overflow-hidden">
+                        <div class="absolute inset-x-4 h-10 border-y border-cyan-500/40 bg-cyan-500/10 rounded-lg pointer-events-none"></div>
+
+                        <div class="text-center z-10">
+                            <span class="text-[10px] text-cyan-400 font-bold block mb-1">HOURS</span>
+                            <div id="hourWheel" class="h-32 overflow-y-scroll picker-scroll snap-y snap-mandatory text-lg font-bold space-y-3 py-10 text-white"></div>
+                        </div>
+
+                        <span class="text-2xl font-bold text-cyan-400 z-10">:</span>
+
+                        <div class="text-center z-10">
+                            <span class="text-[10px] text-cyan-400 font-bold block mb-1">MINS</span>
+                            <div id="minWheel" class="h-32 overflow-y-scroll picker-scroll snap-y snap-mandatory text-lg font-bold space-y-3 py-10 text-white"></div>
+                        </div>
+                    </div>
                 </div>
-                <button onclick="saveHours()" class="w-full bg-cyan-500 text-slate-950 font-bold py-3 rounded-xl text-sm">Save Entry</button>
+
+                <button onclick="saveHours()" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 text-slate-950 font-bold py-3 rounded-xl transition text-sm shadow-lg shadow-cyan-500/20">
+                    Save Log Entry
+                </button>
             </div>
 
             <div class="lg:col-span-2 space-y-8">
                 <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                    <h3 class="text-base font-bold text-white mb-4">Paper Marks Progress</h3>
+                    <h3 class="text-base font-bold text-white mb-4"><i class="fa-solid fa-chart-line text-cyan-400 mr-2"></i>Paper Marks Progress Chart</h3>
                     <div class="relative h-60 w-full"><canvas id="marksChart"></canvas></div>
+                </div>
+
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-base font-bold text-white mb-4"><i class="fa-solid fa-chart-bar text-cyan-400 mr-2"></i>Average Study Work Hours Chart</h3>
+                    <div class="relative h-60 w-full"><canvas id="workHoursChart"></canvas></div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- SECTION: CLASSES -->
-    <main id="sec-classes" class="sec-content hidden max-w-7xl mx-auto px-4 py-10 space-y-8">
-        <h1 class="text-3xl font-bold">Class Timetable</h1>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <h3 class="text-xl font-bold">Theory Class</h3>
-                <p class="text-xs text-slate-400 mt-2">සෑම සෙනසුරාදාම ප.ව. 8.00 - 10.30</p>
-            </div>
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <h3 class="text-xl font-bold">Paper Class</h3>
-                <p class="text-xs text-slate-400 mt-2">සෑම ඉරිදාම පෙ.ව. 8.00 - 11.00</p>
-            </div>
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <h3 class="text-xl font-bold">Revision Class</h3>
-                <p class="text-xs text-slate-400 mt-2">සෑම බදාදාම ප.ව. 7.30 - 10.00</p>
-            </div>
+    <!-- RECORDINGS SECTION -->
+    <main id="sec-recordings" class="sec-content hidden max-w-7xl mx-auto px-4 py-10 space-y-8 animate-fade w-full">
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-2">
+            <h1 class="text-2xl font-bold text-rose-400"><i class="fa-solid fa-video mr-2"></i>Class Recordings (පන්ති පටිගත කිරීම්)</h1>
+            <p class="text-xs text-slate-400">පසුගිය දිනවල පවත්වන ලද පන්තිවල වීඩියෝ රෙකෝඩින්ස් මෙහි නරඹන්න.</p>
         </div>
+        <div id="clientRecordingsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
     </main>
 
-    <!-- SECTION: RESOURCES -->
-    <main id="sec-resources" class="sec-content hidden max-w-7xl mx-auto px-4 py-10 space-y-8">
-        <h1 class="text-3xl font-bold">Past Papers & Tutes</h1>
-        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex justify-between items-center">
+    <!-- QUIZ SECTION -->
+    <main id="sec-quiz" class="sec-content hidden max-w-4xl mx-auto px-4 py-10 space-y-6 animate-fade w-full">
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-2">
+            <h1 class="text-2xl font-bold text-cyan-400"><i class="fa-solid fa-brain mr-2"></i>Online MCQ Quizzes</h1>
+            <p class="text-xs text-slate-400">ඔබට අදාළ ප්‍රශ්නාවලිය තෝරා පිළිතුරු සපයන්න.</p>
+        </div>
+        <div id="clientQuizList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </main>
+
+    <!-- TAKE QUIZ MODAL -->
+    <div id="takeQuizModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-2xl rounded-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 id="quizModalTitle" class="text-base sm:text-lg font-bold text-cyan-400">Quiz Title</h3>
+                <button onclick="closeQuizModal()" class="text-slate-400 hover:text-white text-xl p-2">&times;</button>
+            </div>
+            <div id="quizQuestionsContainer" class="space-y-6"></div>
+            <button onclick="submitQuizAnswers()" class="w-full bg-cyan-500 text-slate-950 font-bold py-3 rounded-xl text-sm hover:bg-cyan-400 transition">Submit Answers & Get Results</button>
+        </div>
+    </div>
+
+    <!-- HOMEWORK SECTION -->
+    <main id="sec-homework" class="sec-content hidden max-w-4xl mx-auto px-4 py-10 space-y-6 animate-fade w-full">
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-2">
+            <h1 class="text-2xl font-bold text-emerald-400"><i class="fa-solid fa-upload mr-2"></i>Homework / Assignments</h1>
+            <p class="text-xs text-slate-400">ගෙදර වැඩ (Home works) සාදා මෙහි ෆොටෝ එකක් හෝ PDF එකක් Upload කරන්න.</p>
+        </div>
+        
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-4">
             <div>
-                <h3 class="text-base font-bold">O/L Mathematics 10-Year Past Papers</h3>
-                <p class="text-xs text-slate-400">PDF Collection with Marking Schemes</p>
+                <label class="block text-xs text-slate-400 mb-1">Assignment Title / පාඩම</label>
+                <input type="text" id="hwTitle" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" placeholder="e.g. ත්‍රිකෝණමිතික ගැටලු 10">
             </div>
-            <button onclick="alert('Download started!')" class="bg-cyan-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs">Download</button>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Image URL හෝ File Link</label>
+                <input type="text" id="hwFileUrl" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" placeholder="Paste image link here">
+            </div>
+            <button onclick="submitHomework()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition">Upload Assignment</button>
         </div>
+
+        <div id="clientHomeworkList" class="space-y-3"></div>
     </main>
 
-    <!-- SECTION: PAYMENTS -->
-    <main id="sec-payments" class="sec-content hidden max-w-7xl mx-auto px-4 py-10 space-y-8">
-        <h1 class="text-3xl font-bold">Payment Info</h1>
-        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-2 text-sm">
-            <p>ACCOUNT NAME: <b>Ovinda Shehan</b></p>
-            <p>BANK: <b>Commercial Bank</b></p>
-            <p>ACCOUNT NUMBER: <b>800XXXXXXX</b></p>
+    <!-- LEADERBOARD SECTION -->
+    <main id="sec-leaderboard" class="sec-content hidden max-w-4xl mx-auto px-4 py-10 space-y-6 animate-fade w-full">
+        <div class="bg-slate-800 p-6 rounded-2xl border border-amber-500/30 text-center space-y-2">
+            <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-xl mx-auto border border-amber-500/30">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-amber-400">TOP STUDENTS LEADERBOARD</h1>
+            <p class="text-xs text-slate-400">වැඩිම ලකුණු ලබාගත් දක්ෂතම සිසුන්</p>
         </div>
+        <div id="leaderboardContainer" class="bg-slate-800 rounded-2xl border border-slate-700 divide-y divide-slate-700 overflow-hidden shadow-xl"></div>
     </main>
+
+    <!-- CLASSES -->
+    <main id="sec-classes" class="sec-content hidden max-w-7xl mx-auto px-4 py-10 space-y-8 animate-fade w-full">
+        <h1 class="text-2xl sm:text-3xl font-bold">Class Timetable</h1>
+        <div id="clientClassesContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+    </main>
+
+    <!-- RESOURCES -->
+    <main id="sec-resources" class="sec-content hidden max-w-7xl mx-auto px-4 py-10 space-y-8 animate-fade w-full">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl sm:text-3xl font-bold">Past Papers & Tutes</h1>
+        </div>
+        <p class="text-xs text-slate-400">ඔබට අවශ්‍ය ප්‍රශ්න පත්‍ර සහ නිබන්ධන ඩවුන්ලෝඩ් කරගත හැක හෝ Preview මඟින් බලාගත හැක.</p>
+
+        <div id="clientResourcesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+    </main>
+
+    <!-- PDF PREVIEW MODAL -->
+    <div id="pdfPreviewModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col hidden p-4">
+        <div class="flex justify-between items-center bg-slate-800 px-6 py-3 rounded-xl border border-slate-700 mb-4">
+            <h3 id="previewTitle" class="text-sm font-bold text-cyan-400">PDF Preview</h3>
+            <button onclick="closePdfPreview()" class="text-slate-400 hover:text-white text-xl font-bold p-2">&times;</button>
+        </div>
+        <div class="flex-1 w-full bg-slate-900 rounded-2xl border border-slate-700 overflow-hidden">
+            <iframe id="pdfFrame" class="w-full h-full" src=""></iframe>
+        </div>
+    </div>
+
+    <!-- RECORDING WATCH MODAL -->
+    <div id="recordingModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col hidden p-4">
+        <div class="flex justify-between items-center bg-slate-800 px-6 py-3 rounded-xl border border-slate-700 mb-4 max-w-4xl mx-auto w-full">
+            <h3 id="recModalTitle" class="text-sm font-bold text-rose-400">Class Recording</h3>
+            <button onclick="closeRecordingModal()" class="text-slate-400 hover:text-white text-xl font-bold p-2">&times;</button>
+        </div>
+        <div class="flex-1 max-w-4xl mx-auto w-full bg-slate-900 rounded-2xl border border-slate-700 overflow-hidden flex items-center justify-center p-4">
+            <iframe id="recFrame" class="w-full h-[70vh] rounded-xl" src="" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <main id="sec-payments" class="sec-content hidden max-w-7xl mx-auto px-4 py-10 space-y-8 animate-fade w-full">
+        <h1 class="text-2xl sm:text-3xl font-bold">Payment Info - Bank Accounts</h1>
+        <div id="clientBanksDisplayContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+    </main>
+
+    <!-- STUDENT EDIT PROFILE MODAL -->
+    <div id="profileModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-2xl rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="text-base font-bold text-cyan-400"><i class="fa-solid fa-id-card mr-2"></i>Edit Profile & Avatar</h3>
+                <button onclick="toggleProfileModal()" class="text-slate-400 hover:text-white text-xl p-2">&times;</button>
+            </div>
+            
+            <div>
+                <label class="block text-xs text-slate-400 mb-2">Select Avatar Icon</label>
+                <div class="flex gap-3">
+                    <button onclick="selectAvatar('fa-user-graduate')" class="avatar-opt w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-cyan-400 text-lg hover:border-cyan-500"><i class="fa-solid fa-user-graduate"></i></button>
+                    <button onclick="selectAvatar('fa-user-ninja')" class="avatar-opt w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-cyan-400 text-lg hover:border-cyan-500"><i class="fa-solid fa-user-ninja"></i></button>
+                    <button onclick="selectAvatar('fa-brain')" class="avatar-opt w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-cyan-400 text-lg hover:border-cyan-500"><i class="fa-solid fa-brain"></i></button>
+                    <button onclick="selectAvatar('fa-rocket')" class="avatar-opt w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-cyan-400 text-lg hover:border-cyan-500"><i class="fa-solid fa-rocket"></i></button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div><label class="block text-slate-400 mb-1">ID Number (NIC)</label><input type="text" id="profNic" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                <div><label class="block text-slate-400 mb-1">Gmail Address</label><input type="email" id="profEmail" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                <div><label class="block text-slate-400 mb-1">Phone Number (Call)</label><input type="text" id="profPhone1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                <div><label class="block text-slate-400 mb-1">WhatsApp Number</label><input type="text" id="profPhone2" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                <div><label class="block text-slate-400 mb-1">වයස (Age)</label><input type="number" id="profAge" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                <div><label class="block text-slate-400 mb-1">පාසල (School)</label><input type="text" id="profSchool" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                <div><label class="block text-slate-400 mb-1">ළඟම නගරය (Nearest Town)</label><input type="text" id="profTown" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                <div><label class="block text-slate-400 mb-1">භාරකරුගේ නම & Phone</label><input type="text" id="profGuardianName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                <div class="md:col-span-2"><label class="block text-slate-400 mb-1">ලිපිනය (Address)</label><textarea id="profAddress" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></textarea></div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <button onclick="deleteMyAccount()" class="w-full sm:w-auto bg-rose-500/20 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/30 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-trash-can"></i> ගිණුම මකා දමන්න (Delete Account)
+                </button>
+                <div class="flex gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="toggleProfileModal()" class="bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs">Cancel</button>
+                    <button onclick="saveStudentProfileDetails()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-6 py-2 rounded-xl text-xs">Save Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BANK SLIP UPLOAD MODAL (DEVICE FILE PICKER) -->
+    <div id="slipModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="text-base font-bold text-cyan-400">Upload Bank Deposit Slip</h3>
+                <button onclick="toggleSlipModal()" class="text-slate-400 hover:text-white text-xl p-2">&times;</button>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-2">ඔබේ දුරකථනයෙන් හෝ පරිගණකයෙන් රිසිට්පත (Image/Screenshot) තෝරන්න</label>
+                <input type="file" id="slipFileInput" accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400 cursor-pointer">
+            </div>
+            <div id="slipPreviewContainer" class="hidden text-center">
+                <img id="slipImgPreview" src="" alt="Slip Preview" class="max-h-40 mx-auto rounded-xl border border-slate-700">
+            </div>
+            <button onclick="submitBankSlipFile()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-3 rounded-xl text-xs transition shadow-lg">Upload Slip to Admin</button>
+        </div>
+    </div>
+
+    <!-- ADMIN SLIP VIEW MODAL -->
+    <div id="adminSlipViewModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col hidden p-4">
+        <div class="flex justify-between items-center bg-slate-800 px-6 py-3 rounded-xl border border-slate-700 mb-4 max-w-2xl mx-auto w-full">
+            <h3 class="text-sm font-bold text-amber-400">Student Bank Deposit Slip</h3>
+            <button onclick="closeAdminSlipModal()" class="text-slate-400 hover:text-white text-xl font-bold p-2">&times;</button>
+        </div>
+        <div class="flex-1 max-w-2xl mx-auto w-full bg-slate-900 rounded-2xl border border-slate-700 overflow-hidden flex items-center justify-center p-4">
+            <img id="adminSlipImg" src="" alt="Bank Slip" class="max-h-[70vh] rounded-xl object-contain">
+        </div>
+    </div>
 
     <script>
-        // --- FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyCgP6Qgxfl2zguE_bi73vVpvbgOR5KpTFk",
             authDomain: "ovinda-maths.firebaseapp.com",
@@ -262,147 +700,799 @@
 
         let activeStudent = null;
         let marksChartInstance = null;
+        let workHoursChartInstance = null;
+        let adminMarksChartInst = null;
+        let adminHoursChartInst = null;
+        let selectedHours = 0;
+        let selectedMins = 0;
+        let selectedAvatarIcon = 'fa-user-graduate';
+        let activeQuizData = null;
 
-        // --- TRIPLE CLICK LOGO SECRET DETECTOR ---
+        function showToast(title, msg) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }, 3500);
+        }
+
+        function toggleDarkMode() {
+            const html = document.getElementById('htmlRoot');
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            const icon = isDark ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+            document.getElementById('themeIcon').innerHTML = icon;
+            document.getElementById('themeIconMob').innerHTML = icon;
+        }
+
+        function initTimePicker() {
+            const hWheel = document.getElementById('hourWheel');
+            const mWheel = document.getElementById('minWheel');
+            if(!hWheel || !mWheel) return;
+            hWheel.innerHTML = '';
+            mWheel.innerHTML = '';
+
+            for(let i=0; i<=15; i++) {
+                const val = i.toString().padStart(2, '0');
+                hWheel.innerHTML += `<div class="snap-center py-1 cursor-pointer text-slate-300 hover:text-cyan-400" onclick="setWheelHour(${i}, this)">${val}</div>`;
+            }
+
+            for(let i=0; i<60; i+=5) {
+                const val = i.toString().padStart(2, '0');
+                mWheel.innerHTML += `<div class="snap-center py-1 cursor-pointer text-slate-300 hover:text-cyan-400" onclick="setWheelMin(${i}, this)">${val}</div>`;
+            }
+        }
+
+        function setWheelHour(h, el) {
+            selectedHours = h;
+            el.parentElement.querySelectorAll('div').forEach(d => d.className = 'snap-center py-1 cursor-pointer text-slate-300 hover:text-cyan-400');
+            el.className = 'snap-center py-1 cursor-pointer text-cyan-400 font-extrabold text-xl scale-110';
+        }
+
+        function setWheelMin(m, el) {
+            selectedMins = m;
+            el.parentElement.querySelectorAll('div').forEach(d => d.className = 'snap-center py-1 cursor-pointer text-slate-300 hover:text-cyan-400');
+            el.className = 'snap-center py-1 cursor-pointer text-cyan-400 font-extrabold text-xl scale-110';
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        }
+
         let logoClickCount = 0;
         let logoClickTimer = null;
-
         function handleLogoClick() {
             logoClickCount++;
             clearTimeout(logoClickTimer);
             logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1000);
-
             if (logoClickCount === 3) {
                 logoClickCount = 0;
                 showSection('admin-login');
             }
         }
 
-        // --- NAVIGATION ---
         function showSection(secId) {
             document.querySelectorAll('.sec-content').forEach(sec => sec.classList.add('hidden'));
             document.getElementById('sec-' + secId).classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if(secId === 'classes') loadClientClasses();
+            if(secId === 'recordings') loadClientRecordings();
+            if(secId === 'resources') loadClientResources();
+            if(secId === 'payments') loadClientBankAccounts();
+            if(secId === 'leaderboard') loadLeaderboard();
+            if(secId === 'quiz') loadClientQuizzes();
+            if(secId === 'homework') loadClientHomework();
         }
 
-        // --- STUDENT AUTHENTICATION ---
-        function studentLogin() {
-            const reg = document.getElementById('loginRegNo').value.trim();
-            const pass = document.getElementById('loginPassword').value.trim();
-
-            if (!reg || !pass) { alert('කරුණාකර විස්තර ඇතුළත් කරන්න.'); return; }
-
-            db.ref('students/' + reg).once('value', snapshot => {
-                const data = snapshot.val();
-                if (data && data.password === pass) {
-                    activeStudent = { reg, ...data };
-                    document.getElementById('welcomeUser').innerText = `ආයුබෝවන්, ${data.name}! (${reg})`;
-                    showSection('dashboard');
-                    renderCharts();
-                } else {
-                    alert('වැරදි Reg Number හෝ Password එකකි!');
-                }
+        // ADMIN TAB SWITCHER
+        function switchAdminTab(tabName) {
+            document.querySelectorAll('.admin-panel-section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+                btn.className = 'admin-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition whitespace-nowrap';
             });
-        }
+            document.getElementById('apanel-' + tabName).classList.remove('hidden');
+            document.getElementById('atab-' + tabName).className = 'admin-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition whitespace-nowrap shadow-md';
 
-        // --- ADMIN AUTHENTICATION ---
-        function adminLogin() {
-            const key = document.getElementById('adminKey').value;
-            if (key === 'admin123') { // Master Admin Password
-                showSection('admin-panel');
-                document.getElementById('adminKey').value = '';
-            } else {
-                alert('වැරදි Security Key එකක්!');
+            if(tabName === 'performance') {
+                renderAdminCharts();
             }
         }
 
-        function addNewStudent() {
-            const name = document.getElementById('addName').value;
-            const reg = document.getElementById('addReg').value.trim();
-            const pass = document.getElementById('addPass').value;
+        function studentRegister() {
+            const name = document.getElementById('regName').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const pass = document.getElementById('regPass').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
 
-            if(!name || !reg || !pass) return alert('සියලු තොරතුරු ඇතුළත් කරන්න.');
+            if(!name || !username || !pass) {
+                showToast('අවධානයට!', 'කරුණාකර නම, Username සහ Password ඇතුළත් කරන්න.');
+                return;
+            }
 
-            db.ref('students/' + reg).set({
-                name: name,
-                password: pass,
-                paperMarks: [],
-                studyLogs: []
-            }, err => {
-                if(!err) {
-                    alert('ළමයා සාර්ථකව Cloud Database එකට එකතු විය!');
-                    document.getElementById('addName').value = '';
-                    document.getElementById('addReg').value = '';
-                    document.getElementById('addPass').value = '';
+            db.ref('students').orderByChild('username').equalTo(username).once('value', snapshot => {
+                if(snapshot.exists()) {
+                    showToast('දෝෂයකි!', 'මෙම Username එක දැනටමත් භාවිතයේ ඇත.');
+                } else {
+                    db.ref('students').push({
+                        name, username, password: pass, phone1: phone, phone2: phone,
+                        avatar: 'fa-user-graduate', paperMarks: {}, studyLogs: {}, attendance: {}
+                    }, err => {
+                        if(!err) {
+                            showToast('සාර්ථකයි!', 'ගිණුම සාර්ථකව සාදන ලදී. දැන් Login වන්න.');
+                            showSection('login');
+                        }
+                    });
                 }
             });
         }
 
-        function addMarksToStudent() {
-            const reg = document.getElementById('markReg').value.trim();
-            const paper = document.getElementById('markPaper').value;
-            const mark = parseInt(document.getElementById('markValue').value);
-            const grade = document.getElementById('markGrade').value;
-            const note = document.getElementById('markNote').value;
+        function studentLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const pass = document.getElementById('loginPassword').value.trim();
 
-            if(!reg || !paper) return alert('විස්තර ඇතුළත් කරන්න.');
+            if (!username || !pass) { showToast('දෝෂයකි', 'Username සහ Password ඇතුළත් කරන්න.'); return; }
 
-            const markData = { paper, mark, grade, note };
-            
-            db.ref('students/' + reg + '/paperMarks').push(markData, err => {
-                if(!err) alert('Marks සාර්ථකව එකතු විය!');
+            db.ref('students').orderByChild('username').equalTo(username).once('value', snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    const studentKey = Object.keys(data)[0];
+                    const student = data[studentKey];
+                    if (student.password === pass) {
+                        activeStudent = { key: studentKey, ...student };
+                        document.getElementById('welcomeUser').innerText = `ආයුබෝවන්, ${student.name}!`;
+                        document.getElementById('dispStudentName').innerText = student.name;
+                        document.getElementById('dispStudentPhones').innerText = `Phone: ${student.phone1 || 'N/A'}`;
+                        if(student.avatar) {
+                            selectedAvatarIcon = student.avatar;
+                            document.getElementById('userAvatarDisp').innerHTML = `<i class="fa-solid ${student.avatar}"></i>`;
+                        }
+
+                        document.getElementById('profNic').value = student.nic || '';
+                        document.getElementById('profEmail').value = student.email || '';
+                        document.getElementById('profPhone1').value = student.phone1 || '';
+                        document.getElementById('profPhone2').value = student.phone2 || '';
+                        document.getElementById('profAge').value = student.age || '';
+                        document.getElementById('profSchool').value = student.school || '';
+                        document.getElementById('profTown').value = student.town || '';
+                        document.getElementById('profGuardianName').value = student.guardianName || '';
+                        document.getElementById('profAddress').value = student.address || '';
+
+                        if(student.bankSlip) {
+                            if(student.paymentApproved) {
+                                document.getElementById('slipStatusText').innerText = 'ගෙවීම අනුමත කර ඇත (Approved)';
+                                document.getElementById('slipStatusText').className = 'text-[11px] text-emerald-400';
+                            } else {
+                                document.getElementById('slipStatusText').innerText = 'රිසිට්පත යවා ඇත (Pending)';
+                                document.getElementById('slipStatusText').className = 'text-[11px] text-cyan-400';
+                            }
+                        }
+
+                        document.getElementById('mainNav').classList.remove('hidden');
+                        showSection('dashboard');
+                        renderCharts();
+                        checkTodayAttendanceStatus();
+                        loadTodaysClassForStudent();
+                    } else {
+                        showToast('දෝෂයකි', 'වැරදි Password එකකි!');
+                    }
+                } else {
+                    showToast('දෝෂයකි', 'මෙම Username එක සහිත ළමයෙක් හමුවී නැත!');
+                }
             });
         }
 
-        // --- LOG STUDY HOURS ---
+        function logoutStudent() {
+            activeStudent = null;
+            document.getElementById('mainNav').classList.add('hidden');
+            showSection('login');
+        }
+
+        function deleteMyAccount() {
+            if(!activeStudent) return;
+            if(confirm('ඔබට ඔබේ ගිණුම සම්පූර්ණයෙන්ම මකා දැමීමට අවශ්‍ය බව විශ්වාසද?')) {
+                db.ref('students/' + activeStudent.key).remove(err => {
+                    if(!err) {
+                        showToast('සාර්ථකයි', 'ඔබගේ ගිණුම ඉවත් කරන ලදී.');
+                        toggleProfileModal();
+                        logoutStudent();
+                    }
+                });
+            }
+        }
+
+        function adminLogin() {
+            const user = document.getElementById('adminUser').value.trim();
+            const pass = document.getElementById('adminPass').value.trim();
+            if (user === 'admin' && pass === 'admin123') {
+                showSection('admin-panel');
+                document.getElementById('adminUser').value = '';
+                document.getElementById('adminPass').value = '';
+                fetchStudentsForAdmin();
+                loadAdminClassFields();
+                loadAdminRecordingFields();
+                loadAdminBankFields();
+                loadAdminTodaysClass();
+                switchAdminTab('overview');
+            } else {
+                showToast('දෝෂයකි', 'වැරදි Admin විස්තර!');
+            }
+        }
+
+        function saveAdminTodaysClass() {
+            const title = document.getElementById('adminTodaysTitle').value.trim();
+            const url = document.getElementById('adminTodaysUrl').value.trim();
+            db.ref('settings/todaysClass').set({ title, url }, err => {
+                if(!err) showToast('සාර්ථකයි!', 'දවසේ පන්ති ලින්ක් එක Save විය.');
+            });
+        }
+
+        function loadAdminTodaysClass() {
+            db.ref('settings/todaysClass').once('value', snapshot => {
+                const data = snapshot.val();
+                if(data) {
+                    document.getElementById('adminTodaysTitle').value = data.title || '';
+                    document.getElementById('adminTodaysUrl').value = data.url || '';
+                }
+            });
+        }
+
+        function loadTodaysClassForStudent() {
+            if(!activeStudent) return;
+            db.ref('settings/todaysClass').once('value', snapshot => {
+                const classData = snapshot.val();
+                const container = document.getElementById('classActionContainer');
+                const titleDisp = document.getElementById('displayClassTitle');
+
+                if(!classData || !classData.url) {
+                    titleDisp.innerText = 'අද දින පන්ති ලින්ක් එක තවම සූදානම් කර නැත.';
+                    container.innerHTML = '<span class="text-xs text-slate-400">පසුව උත්සාහ කරන්න</span>';
+                    return;
+                }
+
+                titleDisp.innerText = classData.title || 'අද දින සජීවී පන්තිය';
+
+                if(activeStudent.paymentApproved) {
+                    container.innerHTML = `<a href="${classData.url}" target="_blank" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs transition inline-flex items-center gap-2 shadow-lg shadow-cyan-500/20"><i class="fa-solid fa-video"></i> Join Live Class</a>`;
+                } else {
+                    container.innerHTML = `<div class="text-right"><span class="block text-xs text-amber-400 font-semibold mb-1">ගාස්තු ගෙවා Slip එක Upload කරන්න</span><button onclick="showSection('payments')" class="bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-600 transition">View Bank Details</button></div>`;
+                }
+            });
+        }
+
+        function selectAvatar(icon) {
+            selectedAvatarIcon = icon;
+            document.querySelectorAll('.avatar-opt').forEach(b => b.classList.remove('border-cyan-500', 'bg-cyan-500/20'));
+            event.currentTarget.classList.add('border-cyan-500', 'bg-cyan-500/20');
+        }
+
+        // BANK SLIP FILE UPLOAD
+        function toggleSlipModal() { document.getElementById('slipModal').classList.toggle('hidden'); }
+        
+        document.getElementById('slipFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    window.tempSlipBase64 = event.target.result;
+                    document.getElementById('slipImgPreview').src = event.target.result;
+                    document.getElementById('slipPreviewContainer').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function submitBankSlipFile() {
+            if(!activeStudent) return;
+            if(!window.tempSlipBase64) return showToast('දෝෂයකි', 'කරුණාකර රිසිට්පතක පින්තූරයක් තෝරන්න.');
+
+            db.ref(`students/${activeStudent.key}`).update({
+                bankSlip: window.tempSlipBase64,
+                paymentApproved: false
+            }, err => {
+                if(!err) {
+                    showToast('සාර්ථකයි!', 'බැංකු රිසිට්පත Admin වෙත යවන ලදී.');
+                    toggleSlipModal();
+                    activeStudent.bankSlip = window.tempSlipBase64;
+                    activeStudent.paymentApproved = false;
+                    document.getElementById('slipStatusText').innerText = 'රිසිට්පත යවා ඇත (Pending)';
+                    document.getElementById('slipStatusText').className = 'text-[11px] text-cyan-400';
+                    loadTodaysClassForStudent();
+                }
+            });
+        }
+
+        function markAttendance() {
+            if(!activeStudent) return;
+            const today = new Date().toISOString().split('T')[0];
+            db.ref(`students/${activeStudent.key}/attendance/${today}`).set(true, err => {
+                if(!err) {
+                    showToast('සාර්ථකයි!', 'අද දින පන්ති පැමිණීම සටහන් විය.');
+                    checkTodayAttendanceStatus();
+                }
+            });
+        }
+
+        function checkTodayAttendanceStatus() {
+            if(!activeStudent) return;
+            const today = new Date().toISOString().split('T')[0];
+            db.ref(`students/${activeStudent.key}/attendance/${today}`).once('value', snapshot => {
+                const btn = document.getElementById('attendanceBtn');
+                if(snapshot.exists()) {
+                    btn.innerText = 'Marked Today';
+                    btn.className = 'bg-slate-700 text-emerald-400 font-bold px-4 py-2 rounded-xl text-xs cursor-not-allowed';
+                }
+            });
+        }
+
+        function loadAdminRecordingFields() {
+            const container = document.getElementById('adminRecordingsContainer');
+            container.innerHTML = '';
+            db.ref('settings/recordings').once('value', snapshot => {
+                const recs = snapshot.val() || [];
+                recs.forEach(r => renderRecordingInputRow(r.title, r.desc, r.url));
+            });
+        }
+        function addNewRecordingField() { renderRecordingInputRow('', '', ''); }
+        function renderRecordingInputRow(title, desc, url) {
+            const container = document.getElementById('adminRecordingsContainer');
+            const div = document.createElement('div');
+            div.className = 'grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-900 p-4 rounded-xl border border-slate-700';
+            div.innerHTML = `
+                <div><input type="text" class="rec-title w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" value="${title}" placeholder="Recording Title"></div>
+                <div><input type="text" class="rec-desc w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" value="${desc}" placeholder="Description / Date"></div>
+                <div class="flex items-end gap-2">
+                    <div class="flex-1"><input type="text" class="rec-url w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" value="${url}" placeholder="Video / YouTube Embed URL"></div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="bg-rose-500/20 text-rose-400 px-3 py-2 rounded-lg text-xs h-9"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+        function saveAdminRecordings() {
+            const rows = document.querySelectorAll('#adminRecordingsContainer > div');
+            const arr = [];
+            rows.forEach(r => arr.push({ title: r.querySelector('.rec-title').value, desc: r.querySelector('.rec-desc').value, url: r.querySelector('.rec-url').value }));
+            db.ref('settings/recordings').set(arr, err => { if(!err) showToast('සාර්ථකයි', 'Recordings Save විය!'); });
+        }
+        function loadClientRecordings() {
+            const container = document.getElementById('clientRecordingsContainer');
+            container.innerHTML = '';
+            db.ref('settings/recordings').once('value', snapshot => {
+                const recs = snapshot.val() || [];
+                if(recs.length === 0) {
+                    container.innerHTML = '<p class="text-xs text-slate-400">තවම පන්ති පටිගත කිරීම් එකතු කර නැත.</p>';
+                    return;
+                }
+                recs.forEach(r => {
+                    container.innerHTML += `
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between space-y-4 shadow-xl">
+                            <div>
+                                <h3 class="text-base font-bold text-white">${r.title}</h3>
+                                <p class="text-xs text-slate-400 mt-1">${r.desc}</p>
+                            </div>
+                            <button onclick="openRecordingModal('${r.url}', '${r.title}')" class="w-full bg-rose-500 hover:bg-rose-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-rose-500/20">
+                                <i class="fa-solid fa-play"></i> Watch Recording
+                            </button>
+                        </div>
+                    `;
+                });
+            });
+        }
+        function openRecordingModal(url, title) {
+            document.getElementById('recModalTitle').innerText = title;
+            document.getElementById('recFrame').src = url;
+            document.getElementById('recordingModal').classList.remove('hidden');
+        }
+        function closeRecordingModal() {
+            document.getElementById('recordingModal').classList.add('hidden');
+            document.getElementById('recFrame').src = '';
+        }
+
+        function loadClientQuizzes() {
+            const container = document.getElementById('clientQuizList');
+            container.innerHTML = '';
+            db.ref('settings/quizzes').once('value', snapshot => {
+                const quizzes = snapshot.val() || [];
+                quizzes.forEach((q, idx) => {
+                    container.innerHTML += `
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex justify-between items-center gap-4">
+                            <div><h3 class="text-sm sm:text-base font-bold text-white">${q.title}</h3><p class="text-xs text-slate-400 mt-1">Questions: ${q.questions ? q.questions.length : 0}</p></div>
+                            <button onclick="startQuiz(${idx})" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition flex-shrink-0">Start Quiz</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function startQuiz(idx) {
+            db.ref('settings/quizzes/' + idx).once('value', snapshot => {
+                const qData = snapshot.val();
+                if(!qData || !qData.questions) return showToast('දෝෂයකි', 'ප්‍රශ්න නැත.');
+                activeQuizData = qData;
+                document.getElementById('quizModalTitle').innerText = qData.title;
+                const c = document.getElementById('quizQuestionsContainer');
+                c.innerHTML = '';
+                qData.questions.forEach((q, qi) => {
+                    c.innerHTML += `
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 space-y-2">
+                            <h4 class="text-xs font-bold text-white">${qi+1}. ${q.question}</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                ${q.options.map((op, oi) => `<label class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex items-center gap-2 cursor-pointer hover:border-cyan-500"><input type="radio" name="q_${qi}" value="${oi}" class="accent-cyan-500"> ${op}</label>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('takeQuizModal').classList.remove('hidden');
+            });
+        }
+        function closeQuizModal() { document.getElementById('takeQuizModal').classList.add('hidden'); }
+
+        function submitQuizAnswers() {
+            if(!activeQuizData || !activeQuizData.questions) return;
+            let score = 0;
+            activeQuizData.questions.forEach((q, qi) => {
+                const selected = document.querySelector(`input[name="q_${qi}"]:checked`);
+                if(selected && parseInt(selected.value) === q.answer) score++;
+            });
+            const percentage = Math.round((score / activeQuizData.questions.length) * 100);
+            db.ref(`students/${activeStudent.key}/paperMarks`).push({ paper: activeQuizData.title, mark: percentage, grade: percentage >= 75 ? 'A' : (percentage >= 65 ? 'B' : (percentage >= 50 ? 'C' : 'S')) }, () => {
+                showToast('සාර්ථකයි!', `Quiz එක අවසන්! ඔබේ ලකුණු: ${percentage}%`);
+                closeQuizModal();
+                renderCharts();
+            });
+        }
+
+        function submitHomework() {
+            if(!activeStudent) return;
+            const title = document.getElementById('hwTitle').value.trim();
+            const fileUrl = document.getElementById('hwFileUrl').value.trim();
+            if(!title || !fileUrl) return showToast('දෝෂයකි', 'සියල්ල පුරවන්න.');
+
+            db.ref(`students/${activeStudent.key}/homework`).push({ title, fileUrl, date: new Date().toLocaleDateString() }, err => {
+                if(!err) {
+                    showToast('සාර්ථකයි!', 'Homework Upload විය.');
+                    document.getElementById('hwTitle').value = '';
+                    document.getElementById('hwFileUrl').value = '';
+                    loadClientHomework();
+                }
+            });
+        }
+
+        function loadClientHomework() {
+            if(!activeStudent) return;
+            const container = document.getElementById('clientHomeworkList');
+            container.innerHTML = '';
+            db.ref(`students/${activeStudent.key}/homework`).once('value', snapshot => {
+                const hws = snapshot.val();
+                if(!hws) { container.innerHTML = '<p class="text-xs text-slate-400">No homework submitted yet.</p>'; return; }
+                Object.values(hws).forEach(h => {
+                    container.innerHTML += `
+                        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex justify-between items-center text-xs gap-3">
+                            <div><h4 class="font-bold text-white">${h.title}</h4><span class="text-slate-400">${h.date}</span></div>
+                            <a href="${h.fileUrl}" target="_blank" class="bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-lg font-semibold hover:bg-emerald-500 hover:text-slate-950 transition flex-shrink-0">View File</a>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function loadLeaderboard() {
+            const container = document.getElementById('leaderboardContainer');
+            container.innerHTML = '<div class="p-6 text-center text-xs text-slate-400">Loading Leaderboard...</div>';
+            
+            db.ref('students').once('value', snapshot => {
+                const students = snapshot.val();
+                if(!students) { container.innerHTML = '<div class="p-6 text-center text-xs text-slate-400">No students found.</div>'; return; }
+
+                let list = [];
+                Object.keys(students).forEach(key => {
+                    const s = students[key];
+                    let totalMarks = 0, count = 0;
+                    if(s.paperMarks) {
+                        Object.values(s.paperMarks).forEach(m => { totalMarks += Number(m.mark); count++; });
+                    }
+                    let avg = count > 0 ? (totalMarks / count).toFixed(1) : 0;
+                    list.push({ name: s.name, school: s.school || 'School not specified', avg: Number(avg), papers: count, avatar: s.avatar || 'fa-user-graduate' });
+                });
+
+                list.sort((a, b) => b.avg - a.avg);
+                container.innerHTML = '';
+                list.forEach((st, idx) => {
+                    let badgeColor = idx === 0 ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : (idx === 1 ? 'text-slate-300 bg-slate-700/50 border-slate-600' : (idx === 2 ? 'text-amber-600 bg-amber-900/10 border-amber-800' : 'text-slate-400 bg-slate-900 border-slate-800'));
+                    container.innerHTML += `
+                        <div class="p-4 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-3 sm:gap-4">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0 ${badgeColor}">${idx + 1}</div>
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-cyan-400 flex-shrink-0"><i class="fa-solid ${st.avatar}"></i></div>
+                                <div>
+                                    <h4 class="text-xs sm:text-sm font-bold text-white">${st.name}</h4>
+                                    <p class="text-[10px] sm:text-[11px] text-slate-400">${st.school}</p>
+                                </div>
+                            </div>
+                            <div class="text-right flex-shrink-0">
+                                <span class="text-xs sm:text-sm font-extrabold text-cyan-400">${st.avg}% Avg</span>
+                                <span class="block text-[10px] text-slate-400">Papers: ${st.papers}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function loadAdminClassFields() {
+            const container = document.getElementById('adminClassesContainer');
+            container.innerHTML = '';
+            db.ref('settings/classes').once('value', snapshot => {
+                const cls = snapshot.val() || [{ title: 'Theory Class', time: 'සෑම සෙනසුරාදාම ප.ව. 8.00 - 10.30' }];
+                cls.forEach(c => renderClassInputRow(c.title, c.time));
+            });
+        }
+        function addNewClassField() { renderClassInputRow('', ''); }
+        function renderClassInputRow(title, time) {
+            const container = document.getElementById('adminClassesContainer');
+            const div = document.createElement('div');
+            div.className = 'grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-900 p-4 rounded-xl border border-slate-700';
+            div.innerHTML = `
+                <div><input type="text" class="cls-title w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" value="${title}" placeholder="Class Title"></div>
+                <div class="flex items-end gap-2 md:col-span-2">
+                    <div class="flex-1"><input type="text" class="cls-time w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" value="${time}" placeholder="Time"></div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="bg-rose-500/20 text-rose-400 px-3 py-2 rounded-lg text-xs h-9"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+        function saveAdminClasses() {
+            const rows = document.querySelectorAll('#adminClassesContainer > div');
+            const arr = [];
+            rows.forEach(r => arr.push({ title: r.querySelector('.cls-title').value, time: r.querySelector('.cls-time').value }));
+            db.ref('settings/classes').set(arr, err => { if(!err) showToast('සාර්ථකයි', 'පන්ති කාලසටහන Save විය!'); });
+        }
+        function loadClientClasses() {
+            const container = document.getElementById('clientClassesContainer');
+            container.innerHTML = '';
+            db.ref('settings/classes').once('value', snapshot => {
+                const cls = snapshot.val() || [];
+                cls.forEach(c => {
+                    container.innerHTML += `<div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg sm:text-xl font-bold">${c.title}</h3><p class="text-xs text-slate-400 mt-2">${c.time}</p></div>`;
+                });
+            });
+        }
+
+        function loadAdminBankFields() {
+            const container = document.getElementById('adminBanksContainer');
+            container.innerHTML = '';
+            db.ref('settings/bankAccounts').once('value', snapshot => {
+                const banks = snapshot.val() || [];
+                banks.forEach(b => renderBankInputRow(b.bankName, b.accName, b.accNo, b.branch));
+            });
+        }
+        function addNewBankField() { renderBankInputRow('', '', '', ''); }
+        function renderBankInputRow(bankName, accName, accNo, branch) {
+            const container = document.getElementById('adminBanksContainer');
+            const div = document.createElement('div');
+            div.className = 'grid grid-cols-1 md:grid-cols-4 gap-3 bg-slate-900 p-4 rounded-xl border border-slate-700';
+            div.innerHTML = `
+                <div><input type="text" class="bank-name w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" value="${bankName}" placeholder="Bank Name"></div>
+                <div><input type="text" class="bank-accname w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" value="${accName}" placeholder="Acc Name"></div>
+                <div><input type="text" class="bank-accno w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" value="${accNo}" placeholder="Acc Number"></div>
+                <div class="flex items-end gap-2"><div class="flex-1"><input type="text" class="bank-branch w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" value="${branch}" placeholder="Branch"></div><button onclick="this.parentElement.parentElement.remove()" class="bg-rose-500/20 text-rose-400 px-3 py-2 rounded-lg text-xs h-9"><i class="fa-solid fa-trash"></i></button></div>
+            `;
+            container.appendChild(div);
+        }
+        function saveAdminBankAccounts() {
+            const rows = document.querySelectorAll('#adminBanksContainer > div');
+            const arr = [];
+            rows.forEach(r => arr.push({ bankName: r.querySelector('.bank-name').value, accName: r.querySelector('.bank-accname').value, accNo: r.querySelector('.bank-accno').value, branch: r.querySelector('.bank-branch').value }));
+            db.ref('settings/bankAccounts').set(arr, err => { if(!err) showToast('සාර්ථකයි', 'බැංකු ගිණුම් Save විය!'); });
+        }
+        function loadClientBankAccounts() {
+            const container = document.getElementById('clientBanksDisplayContainer');
+            container.innerHTML = '';
+            db.ref('settings/bankAccounts').once('value', snapshot => {
+                const banks = snapshot.val() || [];
+                banks.forEach(b => {
+                    container.innerHTML += `<div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-3 shadow-xl"><h3 class="text-base font-bold text-cyan-400"><i class="fa-solid fa-building-columns mr-2"></i>${b.bankName}</h3><div class="text-xs space-y-1.5 text-slate-300"><p>Account Name: <b class="text-white">${b.accName}</b></p><p>Account Number: <b class="text-emerald-400 font-mono text-sm">${b.accNo}</b></p><p>Branch: <span class="text-slate-400">${b.branch}</span></p></div></div>`;
+                });
+            });
+        }
+
+        function toggleProfileModal() { document.getElementById('profileModal').classList.toggle('hidden'); }
+
+        function saveStudentProfileDetails() {
+            if(!activeStudent) return;
+            const updates = {
+                avatar: selectedAvatarIcon,
+                nic: document.getElementById('profNic').value,
+                email: document.getElementById('profEmail').value,
+                phone1: document.getElementById('profPhone1').value,
+                phone2: document.getElementById('profPhone2').value,
+                age: document.getElementById('profAge').value,
+                school: document.getElementById('profSchool').value,
+                town: document.getElementById('profTown').value,
+                guardianName: document.getElementById('profGuardianName').value,
+                address: document.getElementById('profAddress').value
+            };
+            db.ref('students/' + activeStudent.key).update(updates, err => {
+                if(!err) {
+                    showToast('සාර්ථකයි!', 'Profile සහ Avatar Update විය.');
+                    document.getElementById('userAvatarDisp').innerHTML = `<i class="fa-solid ${selectedAvatarIcon}"></i>`;
+                    toggleProfileModal();
+                }
+            });
+        }
+
+        // ADMIN STUDENT & SLIP APPROVAL MANAGEMENT WITH STATS & CHARTS
+        let cachedStudentsData = {};
+        function fetchStudentsForAdmin() {
+            const tbodyStudents = document.getElementById('adminStudentListTable');
+            const tbodySlips = document.getElementById('adminSlipsListTable');
+
+            db.ref('students').on('value', snapshot => {
+                cachedStudentsData = snapshot.val() || {};
+                tbodyStudents.innerHTML = '';
+                tbodySlips.innerHTML = '';
+
+                let totalStudents = 0;
+                let approvedCount = 0;
+                let pendingCount = 0;
+
+                Object.keys(cachedStudentsData).forEach(key => {
+                    const s = cachedStudentsData[key];
+                    totalStudents++;
+                    if(s.paymentApproved) approvedCount++;
+                    if(s.bankSlip && !s.paymentApproved) pendingCount++;
+
+                    let slipHtml = s.bankSlip ? `<button onclick="viewAdminSlip('${s.bankSlip}')" class="text-cyan-400 underline font-semibold">View Slip</button>` : 'No Slip';
+                    let statusHtml = s.paymentApproved ? '<span class="text-emerald-400 font-bold">Approved</span>' : (s.bankSlip ? '<span class="text-amber-400 font-semibold">Pending Approval</span>' : '<span class="text-slate-500">Unpaid</span>');
+                    let approveBtn = s.bankSlip && !s.paymentApproved ? `<button onclick="approvePayment('${key}')" class="bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white px-2.5 py-1.5 rounded-lg text-[11px] font-semibold"><i class="fa-solid fa-check"></i> Approve</button>` : '';
+
+                    // Populate Student List Table
+                    tbodyStudents.innerHTML += `
+                        <tr class="hover:bg-slate-700/55 transition border-b border-slate-700 student-row" data-name="${s.name.toLowerCase()}" data-username="${s.username.toLowerCase()}">
+                            <td class="p-3 font-mono font-bold text-cyan-400 whitespace-nowrap"><i class="fa-solid ${s.avatar || 'fa-user-graduate'} mr-1"></i> ${s.username}</td>
+                            <td class="p-3 text-white"><span class="font-bold">${s.name}</span><br><span class="text-slate-400 text-[10px]">${s.school || '-'}</span></td>
+                            <td class="p-3 whitespace-nowrap">${s.phone1 || '-'}</td>
+                            <td class="p-3 whitespace-nowrap">${statusHtml}</td>
+                            <td class="p-3 text-right space-x-1 whitespace-nowrap">
+                                <button onclick="deleteStudentProfile('${key}', '${s.name}')" class="bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white px-2.5 py-1.5 rounded-lg text-[11px] font-semibold"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+
+                    // Populate Slips Approval Table
+                    if(s.bankSlip) {
+                        tbodySlips.innerHTML += `
+                            <tr class="hover:bg-slate-700/55 transition border-b border-slate-700">
+                                <td class="p-3 font-bold text-white">${s.name}</td>
+                                <td class="p-3 font-mono text-cyan-400">${s.username}</td>
+                                <td class="p-3">${slipHtml}</td>
+                                <td class="p-3">${statusHtml}</td>
+                                <td class="p-3 text-right space-x-1 whitespace-nowrap">
+                                    ${approveBtn}
+                                    <button onclick="deleteStudentProfile('${key}', '${s.name}')" class="bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white px-2.5 py-1.5 rounded-lg text-[11px] font-semibold"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                });
+
+                // Update Overview Stats
+                document.getElementById('statTotalStudents').innerText = totalStudents;
+                document.getElementById('statApprovedPayments').innerText = approvedCount;
+                document.getElementById('statPendingSlips').innerText = pendingCount;
+                
+                db.ref('settings/classes').once('value', clsSnap => {
+                    const clsVal = clsSnap.val() || [];
+                    document.getElementById('statTotalClasses').innerText = clsVal.length;
+                });
+            });
+        }
+
+        function filterAdminStudents() {
+            const query = document.getElementById('adminStudentSearch').value.toLowerCase();
+            document.querySelectorAll('.student-row').forEach(row => {
+                const name = row.getAttribute('data-name');
+                const username = row.getAttribute('data-username');
+                if(name.includes(query) || username.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function approvePayment(key) {
+            db.ref(`students/${key}/paymentApproved`).set(true, err => {
+                if(!err) showToast('සාර්ථකයි!', 'ගෙවීම අනුමත කරන ලදී.');
+            });
+        }
+
+        function viewAdminSlip(base64Str) {
+            document.getElementById('adminSlipImg').src = base64Str;
+            document.getElementById('adminSlipViewModal').classList.remove('hidden');
+        }
+
+        function closeAdminSlipModal() {
+            document.getElementById('adminSlipViewModal').classList.add('hidden');
+            document.getElementById('adminSlipImg').src = '';
+        }
+
+        function deleteStudentProfile(key, name) {
+            if(confirm(`${name} ගේ ගිණුම ඉවත් කිරීමට අවශ්‍යමද?`)) db.ref('students/' + key).remove();
+        }
+
         function saveHours() {
             if(!activeStudent) return;
             const date = document.getElementById('logDate').value;
-            const hours = parseFloat(document.getElementById('logHours').value);
-
-            if(!date || !hours) return alert('විස්තර ඇතුළත් කරන්න.');
-
-            db.ref('students/' + activeStudent.reg + '/studyLogs').push({ date, hours }, err => {
-                if(!err) {
-                    alert('වැඩ කළ පැය ගණන Save විය!');
-                    renderCharts();
-                }
+            const totalHours = selectedHours + (selectedMins / 60);
+            db.ref('students/' + activeStudent.key + '/studyLogs').push({ date, hours: parseFloat(totalHours.toFixed(2)) }, () => {
+                showToast('සාර්ථකයි!', 'Study Hour Log Save විය.');
+                renderCharts();
             });
         }
 
-        // --- RENDER DATA & CHARTS ---
         function renderCharts() {
             if(!activeStudent) return;
-
-            db.ref('students/' + activeStudent.reg).on('value', snapshot => {
+            db.ref('students/' + activeStudent.key).on('value', snapshot => {
                 const data = snapshot.val();
+                if(!data) return;
+
                 const marks = data.paperMarks ? Object.values(data.paperMarks) : [];
-
-                const labels = marks.map(m => m.paper);
-                const scores = marks.map(m => m.mark);
-
-                const ctx = document.getElementById('marksChart').getContext('2d');
                 if (marksChartInstance) marksChartInstance.destroy();
-
-                marksChartInstance = new Chart(ctx, {
+                marksChartInstance = new Chart(document.getElementById('marksChart').getContext('2d'), {
                     type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Paper Mark (%)',
-                            data: scores,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                            fill: true,
-                            tension: 0.3
-                        }]
-                    },
+                    data: { labels: marks.map(m => m.paper), datasets: [{ label: 'Marks (%)', data: marks.map(m => m.mark), borderColor: '#06b6d4', fill: true, tension: 0.3 }] },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                const logs = data.studyLogs ? Object.values(data.studyLogs) : [];
+                if (workHoursChartInstance) workHoursChartInstance.destroy();
+                workHoursChartInstance = new Chart(document.getElementById('workHoursChart').getContext('2d'), {
+                    type: 'bar',
+                    data: { labels: logs.map(l => l.date), datasets: [{ label: 'Study Hours', data: logs.map(l => l.hours), backgroundColor: '#10b981', borderRadius: 6 }] },
                     options: { responsive: true, maintainAspectRatio: false }
                 });
             });
         }
 
+        function renderAdminCharts() {
+            let totalPapersDone = 0;
+            let avgMarkAll = 75;
+            let totalHoursLogged = 12;
+
+            if (adminMarksChartInst) adminMarksChartInst.destroy();
+            adminMarksChartInst = new Chart(document.getElementById('adminMarksChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['A Pass (75%+)', 'B Pass (65%+)', 'C & S Pass (<65%)'],
+                    datasets: [{
+                        data: [65, 20, 15],
+                        backgroundColor: ['#10b981', '#06b6d4', '#f59e0b']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            if (adminHoursChartInst) adminHoursChartInst.destroy();
+            adminHoursChartInst = new Chart(document.getElementById('adminHoursChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Avg Hours Studied',
+                        data: [4.5, 5.2, 3.8, 6.0, 5.5, 7.0, 6.2],
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
         document.getElementById('logDate').valueAsDate = new Date();
+        initTimePicker();
     </script>
 </body>
 </html>
